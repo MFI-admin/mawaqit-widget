@@ -83,7 +83,7 @@
       const isInteraktiv = which === "interaktiv";
       btnInteraktiv.classList.toggle("active", isInteraktiv);
       btnNachrichten.classList.toggle("active", !isInteraktiv);
-      iframe.src = isInterativ ? URL_INTERAKTIV : URL_NACHRICHTEN;
+      iframe.src = isInteraktiv ? URL_INTERAKTIV : URL_NACHRICHTEN;
     }
 
     btnInteraktiv.addEventListener("click", () => setActive("interaktiv"));
