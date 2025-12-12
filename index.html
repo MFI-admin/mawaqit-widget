@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Prayer Times</title>
+  <meta charset="UTF-8" />
+  <title>Mawaqit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body {
       margin: 0;
@@ -10,19 +11,84 @@
       height: 100%;
       overflow: hidden;
       background: black;
+      font-family: Arial, sans-serif;
     }
-    iframe {
+
+    /* Fullscreen iframe */
+    #view {
       width: 100vw;
       height: 100vh;
       border: 0;
+      display: block;
+    }
+
+    /* Transparent overlay bar */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      z-index: 9999;
+
+      /* transparent background */
+      background: rgba(0,0,0,0.15);
+      backdrop-filter: blur(2px);
+    }
+
+    /* Transparent buttons */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(0,0,0,0.25);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn.active {
+      background: rgba(255,255,255,0.20);
+      border-color: rgba(255,255,255,0.6);
     }
   </style>
 </head>
 <body>
-  <iframe
+
+  <div class="overlay">
+    <button id="btnInteraktiv" class="btn active">Interaktiv</button>
+    <button id="btnNachrichten" class="btn">Nachrichten</button>
+  </div>
+
+  <iframe id="view"
     src="https://mawaqit.net/en/w/munchner-forum-fur-islam-mfi-muni-80331-germany?showOnly5PrayerTimes=0"
     frameborder="0"
     scrolling="no">
   </iframe>
+
+  <script>
+    const URL_INTERAKTIV =
+      "https://mawaqit.net/en/w/munchner-forum-fur-islam-mfi-muni-80331-germany?showOnly5PrayerTimes=0";
+    const URL_NACHRICHTEN =
+      "https://mawaqit.net/de/nachrichten/id/43543";
+
+    const iframe = document.getElementById("view");
+    const btnInteraktiv = document.getElementById("btnInteraktiv");
+    const btnNachrichten = document.getElementById("btnNachrichten");
+
+    function setActive(which) {
+      const isInteraktiv = which === "interaktiv";
+      btnInteraktiv.classList.toggle("active", isInteraktiv);
+      btnNachrichten.classList.toggle("active", !isInteraktiv);
+      iframe.src = isInterativ ? URL_INTERAKTIV : URL_NACHRICHTEN;
+    }
+
+    btnInteraktiv.addEventListener("click", () => setActive("interaktiv"));
+    btnNachrichten.addEventListener("click", () => setActive("nachrichten"));
+  </script>
+
 </body>
 </html>
