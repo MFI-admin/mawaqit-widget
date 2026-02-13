@@ -22,24 +22,44 @@
       display: block;
     }
 
-    /* Transparent overlay bar */
-    .overlay {
+    /* Container for the hidden dropdown bar */
+    .overlay-wrap {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      padding: 12px;
+      z-index: 9999;
+    }
+
+    /* The thin "line" always visible */
+    .top-line {
+      height: 8px; /* thin line */
+      background: rgba(0,0,0,0.20);
+      backdrop-filter: blur(2px);
+      cursor: pointer;
+    }
+
+    /* The actual dropdown panel (hidden by default) */
+    .overlay {
       display: flex;
       gap: 10px;
       justify-content: center;
-      z-index: 9999;
+      padding: 12px;
 
-      /* transparent background */
       background: rgba(0,0,0,0.15);
       backdrop-filter: blur(2px);
+
+      transform: translateY(-100%);
+      transition: transform 220ms ease;
     }
 
-    /* Transparent buttons */
+    /* Show dropdown on hover (mouse) OR when opened (touch) */
+    .overlay-wrap:hover .overlay,
+    .overlay-wrap.open .overlay {
+      transform: translateY(0);
+    }
+
+    /* Buttons */
     .btn {
       padding: 10px 18px;
       border-radius: 10px;
@@ -58,9 +78,13 @@
 </head>
 <body>
 
-  <div class="overlay">
-    <button id="btnInteraktiv" class="btn active">Interaktiv</button>
-    <button id="btnNachrichten" class="btn">Nachrichten</button>
+  <div class="overlay-wrap" id="overlayWrap">
+    <div class="top-line" id="topLine" aria-label="Open menu"></div>
+
+    <div class="overlay" id="overlayPanel">
+      <button id="btnInteraktiv" class="btn active">Interaktiv</button>
+      <button id="btnNachrichten" class="btn">Nachrichten</button>
+    </div>
   </div>
 
   <iframe id="view"
@@ -79,6 +103,9 @@
     const btnInteraktiv = document.getElementById("btnInteraktiv");
     const btnNachrichten = document.getElementById("btnNachrichten");
 
+    const overlayWrap = document.getElementById("overlayWrap");
+    const topLine = document.getElementById("topLine");
+
     function setActive(which) {
       const isInteraktiv = which === "interaktiv";
       btnInteraktiv.classList.toggle("active", isInteraktiv);
@@ -86,8 +113,28 @@
       iframe.src = isInteraktiv ? URL_INTERAKTIV : URL_NACHRICHTEN;
     }
 
-    btnInteraktiv.addEventListener("click", () => setActive("interaktiv"));
-    btnNachrichten.addEventListener("click", () => setActive("nachrichten"));
+    btnInteraktiv.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setActive("interaktiv");
+      overlayWrap.classList.remove("open");
+    });
+
+    btnNachrichten.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setActive("nachrichten");
+      overlayWrap.classList.remove("open");
+    });
+
+    // Touch / click: tap the thin line to open/close
+    topLine.addEventListener("click", (e) => {
+      e.stopPropagation();
+      overlayWrap.classList.toggle("open");
+    });
+
+    // Tap anywhere else to close (for TV / touch)
+    document.addEventListener("click", () => {
+      overlayWrap.classList.remove("open");
+    });
   </script>
 
 </body>
