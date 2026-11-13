@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
   <title>Mawaqit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
     html, body {
       margin: 0;
@@ -29,18 +31,25 @@
       left: 0;
       right: 0;
       z-index: 9999;
+      pointer-events: none;
     }
 
-    /* The thin "line" always visible */
+    /* Thin line always visible */
     .top-line {
-      height: 8px; /* thin line */
+      height: 8px;
       background: rgba(0,0,0,0.20);
       backdrop-filter: blur(2px);
       cursor: pointer;
+      pointer-events: auto;
     }
 
-    /* The actual dropdown panel (hidden by default) */
+    /* Dropdown panel */
     .overlay {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+
       display: flex;
       gap: 10px;
       justify-content: center;
@@ -49,17 +58,26 @@
       background: rgba(0,0,0,0.15);
       backdrop-filter: blur(2px);
 
-      transform: translateY(-100%);
-      transition: transform 220ms ease;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: opacity 220ms ease,
+                  transform 220ms ease,
+                  visibility 220ms ease;
+
+      pointer-events: none;
     }
 
-    /* Show dropdown on hover (mouse) OR when opened (touch) */
+    /* Show dropdown on hover or touch */
     .overlay-wrap:hover .overlay,
     .overlay-wrap.open .overlay {
+      opacity: 1;
+      visibility: visible;
       transform: translateY(0);
+      pointer-events: auto;
     }
 
-    /* Buttons */
+    /* Semi-transparent buttons */
     .btn {
       padding: 10px 18px;
       border-radius: 10px;
@@ -69,48 +87,113 @@
       font-size: 16px;
       cursor: pointer;
       user-select: none;
+      white-space: nowrap;
     }
+
     .btn.active {
       background: rgba(255,255,255,0.20);
       border-color: rgba(255,255,255,0.6);
     }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Smaller buttons for mobile */
+    @media (max-width: 480px) {
+      .overlay {
+        gap: 5px;
+        padding: 10px 5px;
+      }
+
+      .btn {
+        padding: 9px 10px;
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
+
 <body>
 
+  <!-- Hidden dropdown menu -->
   <div class="overlay-wrap" id="overlayWrap">
-    <div class="top-line" id="topLine" aria-label="Open menu"></div>
+
+    <div
+      class="top-line"
+      id="topLine"
+      aria-label="Menü öffnen">
+    </div>
 
     <div class="overlay" id="overlayPanel">
-      <button id="btnInteraktiv" class="btn active">Interaktiv</button>
-      <button id="btnNachrichten" class="btn">Nachrichten</button>
+
+      <button id="btnInteraktiv" class="btn active">
+        Interaktiv
+      </button>
+
+      <button id="btnNachrichten" class="btn">
+        Nachrichten
+      </button>
+
+      <button id="btnFullscreen" class="btn">
+        ⛶ Vollbild
+      </button>
+
     </div>
   </div>
 
-  <iframe id="view"
+  <!-- Mawaqit display -->
+  <iframe
+    id="view"
     src="https://mawaqit.net/en/w/munchner-forum-fur-islam-mfi-muni-80331-germany?showOnly5PrayerTimes=0"
     frameborder="0"
-    scrolling="no">
+    scrolling="no"
+    allowfullscreen>
   </iframe>
 
   <script>
+
+    /* Mawaqit URLs */
     const URL_INTERAKTIV =
       "https://mawaqit.net/en/w/munchner-forum-fur-islam-mfi-muni-80331-germany?showOnly5PrayerTimes=0";
+
     const URL_NACHRICHTEN =
       "https://mawaqit.net/de/messages/id/43543";
 
+    /* Elements */
     const iframe = document.getElementById("view");
-    const btnInteraktiv = document.getElementById("btnInteraktiv");
-    const btnNachrichten = document.getElementById("btnNachrichten");
 
-    const overlayWrap = document.getElementById("overlayWrap");
-    const topLine = document.getElementById("topLine");
+    const btnInteraktiv =
+      document.getElementById("btnInteraktiv");
 
+    const btnNachrichten =
+      document.getElementById("btnNachrichten");
+
+    const btnFullscreen =
+      document.getElementById("btnFullscreen");
+
+    const overlayWrap =
+      document.getElementById("overlayWrap");
+
+    const topLine =
+      document.getElementById("topLine");
+
+    /* Switch between screens */
     function setActive(which) {
+
       const isInteraktiv = which === "interaktiv";
-      btnInteraktiv.classList.toggle("active", isInteraktiv);
-      btnNachrichten.classList.toggle("active", !isInteraktiv);
-      iframe.src = isInteraktiv ? URL_INTERAKTIV : URL_NACHRICHTEN;
+
+      btnInteraktiv.classList.toggle(
+        "active", isInteraktiv
+      );
+
+      btnNachrichten.classList.toggle(
+        "active", !isInteraktiv
+      );
+
+      iframe.src = isInteraktiv
+        ? URL_INTERAKTIV
+        : URL_NACHRICHTEN;
     }
 
     btnInteraktiv.addEventListener("click", (e) => {
@@ -125,16 +208,81 @@
       overlayWrap.classList.remove("open");
     });
 
-    // Touch / click: tap the thin line to open/close
+    /* Fullscreen functionality */
+    function isFullscreen() {
+      return !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement
+      );
+    }
+
+    function updateFullscreenButton() {
+      btnFullscreen.textContent = isFullscreen()
+        ? "⛶ Vollbild beenden"
+        : "⛶ Vollbild";
+    }
+
+    btnFullscreen.addEventListener("click", async (e) => {
+      e.stopPropagation();
+
+      try {
+        if (!isFullscreen()) {
+
+          const page = document.documentElement;
+
+          if (page.requestFullscreen) {
+            await page.requestFullscreen();
+          } else if (page.webkitRequestFullscreen) {
+            await page.webkitRequestFullscreen();
+          } else {
+            alert(
+              "Vollbild wird von diesem Browser nicht unterstützt."
+            );
+            return;
+          }
+
+        } else {
+
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          }
+
+        }
+
+        updateFullscreenButton();
+        overlayWrap.classList.remove("open");
+
+      } catch (error) {
+        alert(
+          "Vollbild konnte nicht aktiviert werden. " +
+          "Bitte verwenden Sie die Vollbildfunktion des Browsers."
+        );
+      }
+    });
+
+    document.addEventListener(
+      "fullscreenchange",
+      updateFullscreenButton
+    );
+
+    document.addEventListener(
+      "webkitfullscreenchange",
+      updateFullscreenButton
+    );
+
+    /* Touch / click: open or close dropdown */
     topLine.addEventListener("click", (e) => {
       e.stopPropagation();
       overlayWrap.classList.toggle("open");
     });
 
-    // Tap anywhere else to close (for TV / touch)
+    /* Close menu when clicking elsewhere */
     document.addEventListener("click", () => {
       overlayWrap.classList.remove("open");
     });
+
   </script>
 
 </body>
