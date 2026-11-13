@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
   <meta charset="UTF-8" />
   <title>Mawaqit</title>
@@ -10,25 +9,21 @@
     html, body {
       margin: 0;
       padding: 0;
-      width: 100%;
       height: 100%;
       overflow: hidden;
       background: black;
       font-family: Arial, sans-serif;
     }
 
-    /* Mawaqit display:
-       90% width and 100% height */
+    /* Fullscreen iframe */
     #view {
-      width: 90vw;
+      width: 100vw;
       height: 100vh;
       border: 0;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
 
-    /* Container for dropdown menu */
+    /* Container for the hidden dropdown bar */
     .overlay-wrap {
       position: fixed;
       top: 0;
@@ -38,7 +33,7 @@
       pointer-events: none;
     }
 
-    /* Thin transparent line at top */
+    /* Thin line always visible */
     .top-line {
       height: 8px;
       background: rgba(0,0,0,0.20);
@@ -47,7 +42,7 @@
       pointer-events: auto;
     }
 
-    /* Hidden dropdown panel */
+    /* Dropdown panel */
     .overlay {
       position: absolute;
       top: 8px;
@@ -65,16 +60,14 @@
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px);
-
-      transition:
-        opacity 220ms ease,
-        transform 220ms ease,
-        visibility 220ms ease;
+      transition: opacity 220ms ease,
+                  transform 220ms ease,
+                  visibility 220ms ease;
 
       pointer-events: none;
     }
 
-    /* Show menu on hover or touch */
+    /* Show dropdown on hover or touch */
     .overlay-wrap:hover .overlay,
     .overlay-wrap.open .overlay {
       opacity: 1;
@@ -122,7 +115,7 @@
 
 <body>
 
-  <!-- Dropdown menu -->
+  <!-- Hidden dropdown menu -->
   <div class="overlay-wrap" id="overlayWrap">
 
     <div
@@ -167,8 +160,7 @@
       "https://mawaqit.net/de/messages/id/43543";
 
     /* Elements */
-    const iframe =
-      document.getElementById("view");
+    const iframe = document.getElementById("view");
 
     const btnInteraktiv =
       document.getElementById("btnInteraktiv");
@@ -188,8 +180,7 @@
     /* Switch between screens */
     function setActive(which) {
 
-      const isInteraktiv =
-        which === "interaktiv";
+      const isInteraktiv = which === "interaktiv";
 
       btnInteraktiv.classList.toggle(
         "active", isInteraktiv
@@ -230,55 +221,45 @@
         : "⛶ Vollbild";
     }
 
-    btnFullscreen.addEventListener(
-      "click",
-      async (e) => {
+    btnFullscreen.addEventListener("click", async (e) => {
+      e.stopPropagation();
 
-        e.stopPropagation();
+      try {
+        if (!isFullscreen()) {
 
-        try {
+          const page = document.documentElement;
 
-          if (!isFullscreen()) {
-
-            const page = document.documentElement;
-
-            if (page.requestFullscreen) {
-              await page.requestFullscreen();
-
-            } else if (page.webkitRequestFullscreen) {
-              await page.webkitRequestFullscreen();
-
-            } else {
-              alert(
-                "Vollbild wird von diesem Browser nicht unterstützt."
-              );
-              return;
-            }
-
+          if (page.requestFullscreen) {
+            await page.requestFullscreen();
+          } else if (page.webkitRequestFullscreen) {
+            await page.webkitRequestFullscreen();
           } else {
-
-            if (document.exitFullscreen) {
-              await document.exitFullscreen();
-
-            } else if (document.webkitExitFullscreen) {
-              await document.webkitExitFullscreen();
-            }
-
+            alert(
+              "Vollbild wird von diesem Browser nicht unterstützt."
+            );
+            return;
           }
 
-          updateFullscreenButton();
-          overlayWrap.classList.remove("open");
+        } else {
 
-        } catch (error) {
-
-          alert(
-            "Vollbild konnte nicht aktiviert werden. " +
-            "Bitte verwenden Sie die Vollbildfunktion des Browsers."
-          );
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          }
 
         }
+
+        updateFullscreenButton();
+        overlayWrap.classList.remove("open");
+
+      } catch (error) {
+        alert(
+          "Vollbild konnte nicht aktiviert werden. " +
+          "Bitte verwenden Sie die Vollbildfunktion des Browsers."
+        );
       }
-    );
+    });
 
     document.addEventListener(
       "fullscreenchange",
@@ -290,13 +271,13 @@
       updateFullscreenButton
     );
 
-    /* Open/close dropdown */
+    /* Touch / click: open or close dropdown */
     topLine.addEventListener("click", (e) => {
       e.stopPropagation();
       overlayWrap.classList.toggle("open");
     });
 
-    /* Close dropdown when clicking elsewhere */
+    /* Close menu when clicking elsewhere */
     document.addEventListener("click", () => {
       overlayWrap.classList.remove("open");
     });
@@ -305,4 +286,3 @@
 
 </body>
 </html>
-
