@@ -2,29 +2,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Mawaqit</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
 
   <style>
     html, body {
       margin: 0;
       padding: 0;
+      width: 100%;
       height: 100%;
       overflow: hidden;
       background: black;
       font-family: Arial, sans-serif;
     }
 
-    /* Fullscreen iframe */
-    #view {
-      width: 100vw;
-      height: 100vh;
-      border: 0;
-      display: block;
+    /* Main display area */
+    .screen-container {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: black;
     }
 
-    /* Container for the hidden dropdown bar */
+    /*
+      Display scale:
+      1.00 = 100%
+      0.90 = 90%
+      0.85 = 85%
+      0.80 = 80%
+      0.75 = 75%
+    */
+
+    #view {
+      position: absolute;
+
+      /* Larger virtual display */
+      width: 117.647%;
+      height: 117.647%;
+
+      /* Center the scaled iframe */
+      left: 50%;
+      top: 50%;
+
+      transform:
+        translate(-50%, -50%) scale(0.85);
+
+      transform-origin: center center;
+
+      border: 0;
+      display: block;
+      background: black;
+    }
+
+    /* Hidden dropdown menu */
     .overlay-wrap {
       position: fixed;
       top: 0;
@@ -34,11 +66,10 @@
       pointer-events: none;
     }
 
-    /* Thin line always visible */
+    /* Thin line at the top */
     .top-line {
       height: 8px;
       background: rgba(0,0,0,0.20);
-      backdrop-filter: blur(2px);
       cursor: pointer;
       pointer-events: auto;
     }
@@ -55,20 +86,21 @@
       justify-content: center;
       padding: 12px;
 
-      background: rgba(0,0,0,0.15);
-      backdrop-filter: blur(2px);
+      background: rgba(0,0,0,0.35);
 
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px);
-      transition: opacity 220ms ease,
-                  transform 220ms ease,
-                  visibility 220ms ease;
+
+      transition:
+        opacity 220ms ease,
+        transform 220ms ease,
+        visibility 220ms ease;
 
       pointer-events: none;
     }
 
-    /* Show dropdown on hover or touch */
+    /* Show menu on hover or touch */
     .overlay-wrap:hover .overlay,
     .overlay-wrap.open .overlay {
       opacity: 1;
@@ -81,9 +113,13 @@
     .btn {
       padding: 10px 18px;
       border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.35);
-      background: rgba(0,0,0,0.25);
+
+      border: 1px solid
+        rgba(255,255,255,0.35);
+
+      background: rgba(0,0,0,0.35);
       color: white;
+
       font-size: 16px;
       cursor: pointer;
       user-select: none;
@@ -99,7 +135,7 @@
       background: rgba(255,255,255,0.25);
     }
 
-    /* Smaller buttons for mobile */
+    /* Mobile layout */
     @media (max-width: 480px) {
       .overlay {
         gap: 5px;
@@ -116,7 +152,7 @@
 
 <body>
 
-  <!-- Hidden dropdown menu -->
+  <!-- Dropdown menu -->
   <div class="overlay-wrap" id="overlayWrap">
 
     <div
@@ -127,15 +163,21 @@
 
     <div class="overlay" id="overlayPanel">
 
-      <button id="btnInteraktiv" class="btn active">
+      <button
+        id="btnInteraktiv"
+        class="btn active">
         Interaktiv
       </button>
 
-      <button id="btnNachrichten" class="btn">
+      <button
+        id="btnNachrichten"
+        class="btn">
         Nachrichten
       </button>
 
-      <button id="btnFullscreen" class="btn">
+      <button
+        id="btnFullscreen"
+        class="btn">
         ⛶ Vollbild
       </button>
 
@@ -143,13 +185,16 @@
   </div>
 
   <!-- Mawaqit display -->
-  <iframe
-    id="view"
-    src="https://mawaqit.net/en/w/munchner-forum-fur-islam-mfi-muni-80331-germany?showOnly5PrayerTimes=0"
-    frameborder="0"
-    scrolling="no"
-    allowfullscreen>
-  </iframe>
+  <div class="screen-container">
+
+    <iframe
+      id="view"
+      src="https://mawaqit.net/en/w/munchner-forum-fur-islam-mfi-muni-80331-germany?showOnly5PrayerTimes=0"
+      scrolling="no"
+      allowfullscreen>
+    </iframe>
+
+  </div>
 
   <script>
 
@@ -161,7 +206,8 @@
       "https://mawaqit.net/de/messages/id/43543";
 
     /* Elements */
-    const iframe = document.getElementById("view");
+    const iframe =
+      document.getElementById("view");
 
     const btnInteraktiv =
       document.getElementById("btnInteraktiv");
@@ -178,10 +224,11 @@
     const topLine =
       document.getElementById("topLine");
 
-    /* Switch between screens */
+    /* Switch screens */
     function setActive(which) {
 
-      const isInteraktiv = which === "interaktiv";
+      const isInteraktiv =
+        which === "interaktiv";
 
       btnInteraktiv.classList.toggle(
         "active", isInteraktiv
@@ -191,22 +238,30 @@
         "active", !isInteraktiv
       );
 
-      iframe.src = isInteraktiv
+      const targetURL = isInteraktiv
         ? URL_INTERAKTIV
         : URL_NACHRICHTEN;
+
+      if (iframe.src !== targetURL) {
+        iframe.src = targetURL;
+      }
     }
 
-    btnInteraktiv.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setActive("interaktiv");
-      overlayWrap.classList.remove("open");
-    });
+    btnInteraktiv.addEventListener(
+      "click", function(e) {
+        e.stopPropagation();
+        setActive("interaktiv");
+        overlayWrap.classList.remove("open");
+      }
+    );
 
-    btnNachrichten.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setActive("nachrichten");
-      overlayWrap.classList.remove("open");
-    });
+    btnNachrichten.addEventListener(
+      "click", function(e) {
+        e.stopPropagation();
+        setActive("nachrichten");
+        overlayWrap.classList.remove("open");
+      }
+    );
 
     /* Fullscreen functionality */
     function isFullscreen() {
@@ -222,45 +277,60 @@
         : "⛶ Vollbild";
     }
 
-    btnFullscreen.addEventListener("click", async (e) => {
-      e.stopPropagation();
+    btnFullscreen.addEventListener(
+      "click", async function(e) {
 
-      try {
-        if (!isFullscreen()) {
+        e.stopPropagation();
 
-          const page = document.documentElement;
+        try {
 
-          if (page.requestFullscreen) {
-            await page.requestFullscreen();
-          } else if (page.webkitRequestFullscreen) {
-            await page.webkitRequestFullscreen();
+          if (!isFullscreen()) {
+
+            const page =
+              document.documentElement;
+
+            if (page.requestFullscreen) {
+              await page.requestFullscreen();
+
+            } else if (
+              page.webkitRequestFullscreen
+            ) {
+              await page.webkitRequestFullscreen();
+
+            } else {
+              alert(
+                "Vollbild wird von diesem Browser nicht unterstützt."
+              );
+              return;
+            }
+
           } else {
-            alert(
-              "Vollbild wird von diesem Browser nicht unterstützt."
-            );
-            return;
+
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+
+            } else if (
+              document.webkitExitFullscreen
+            ) {
+              await document.webkitExitFullscreen();
+            }
           }
 
-        } else {
+          updateFullscreenButton();
 
-          if (document.exitFullscreen) {
-            await document.exitFullscreen();
-          } else if (document.webkitExitFullscreen) {
-            await document.webkitExitFullscreen();
-          }
+          overlayWrap.classList.remove(
+            "open"
+          );
 
+        } catch (error) {
+
+          alert(
+            "Vollbild konnte nicht aktiviert werden. " +
+            "Bitte verwenden Sie die Vollbildfunktion des Browsers."
+          );
         }
-
-        updateFullscreenButton();
-        overlayWrap.classList.remove("open");
-
-      } catch (error) {
-        alert(
-          "Vollbild konnte nicht aktiviert werden. " +
-          "Bitte verwenden Sie die Vollbildfunktion des Browsers."
-        );
       }
-    });
+    );
 
     document.addEventListener(
       "fullscreenchange",
@@ -272,16 +342,25 @@
       updateFullscreenButton
     );
 
-    /* Touch / click: open or close dropdown */
-    topLine.addEventListener("click", (e) => {
-      e.stopPropagation();
-      overlayWrap.classList.toggle("open");
-    });
+    /* Open/close dropdown */
+    topLine.addEventListener(
+      "click", function(e) {
+        e.stopPropagation();
 
-    /* Close menu when clicking elsewhere */
-    document.addEventListener("click", () => {
-      overlayWrap.classList.remove("open");
-    });
+        overlayWrap.classList.toggle(
+          "open"
+        );
+      }
+    );
+
+    /* Close menu when clicking outside */
+    document.addEventListener(
+      "click", function() {
+        overlayWrap.classList.remove(
+          "open"
+        );
+      }
+    );
 
   </script>
 
